@@ -134,8 +134,12 @@ if doctor_id and patient_name:
 
             # Botón de descarga de la predicción
             for model_name, prediction in predictions.items():
+                # Convert the single-channel grayscale prediction to 3-channel RGB format for compatibility
+                prediction_rgb = np.repeat(prediction[:, :, np.newaxis], 3, axis=2)
+            
+                # Save the image in RGB format to avoid "Third dimension must be 3 or 4" error
                 buffer = BytesIO()
-                plt.imsave(buffer, prediction, format="jpg", cmap="gray")
+                plt.imsave(buffer, prediction_rgb, format="jpg")
                 buffer.seek(0)
                 download_filename = f"{patient_name}_{appointment_date}_{model_name}.jpg"
                 st.download_button(
@@ -144,5 +148,6 @@ if doctor_id and patient_name:
                     file_name=download_filename,
                     mime="image/jpg"
                 )
+
 else:
     st.warning("Please enter doctor and patient information to proceed.")
