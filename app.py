@@ -4,6 +4,8 @@ import os
 from tensorflow.keras.models import load_model
 import numpy as np
 
+st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
+
 # Google Drive file IDs para cada archivo
 unet_scratch_model_id = "1F8zkCMlT2eBRjJ5gjhxzp-yq_7zFkr-h"
 unet_transfer_model_id = "1Wf5bzR6Sf2zRfNjFKCmUT6UbgK2MAuP4"
@@ -58,7 +60,6 @@ unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
 unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
 
 # Initialize Streamlit app components
-st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
 st.title("Medical Chest CT Segmentation")
 st.subheader("Doctor and Patient Information")
 
