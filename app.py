@@ -1,58 +1,52 @@
 import streamlit as st
-from model_handler import ModelHandler
-from image_processor import ImageProcessor
-from history_handler import HistoryHandler
-import datetime
-import matplotlib.pyplot as plt
 import gdown
 import os
 from tensorflow.keras.models import load_model
 import numpy as np
 
-# Google Drive file IDs for each file
+# Google Drive file IDs para cada archivo
 unet_scratch_model_id = "1F8zkCMlT2eBRjJ5gjhxzp-yq_7zFkr-h"
 unet_transfer_model_id = "1Wf5bzR6Sf2zRfNjFKCmUT6UbgK2MAuP4"
 unet_scratch_history_id = "1SiOtLlKK2GsZ9VsIW_LHlH-VEcFBrsWk"
 unet_transfer_history_id = "16mklVOSDXywiPx7z1RqVACjJMzn29kni"
 
-# Paths to save the downloaded files
+# Rutas locales para guardar los archivos
 unet_scratch_model_path = "unet_scratch.keras"
 unet_transfer_model_path = "unet_transfer.keras"
 unet_scratch_history_path = "unet_scratch_history.npz"
 unet_transfer_history_path = "unet_transfer_history.npz"
 
-# Function to download a file from Google Drive using gdown
+# Función para descargar un archivo de Google Drive usando gdown
 def download_file_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
     gdown.download(url, output_path, quiet=False)
 
-# Check if the files are already downloaded; if not, download them
+# Verifica si los archivos ya existen y descárgalos si es necesario
 if not os.path.exists(unet_scratch_model_path):
-    st.write("Downloading U-Net Scratch model file...")
+    st.write("Descargando modelo U-Net desde cero...")
     download_file_from_drive(unet_scratch_model_id, unet_scratch_model_path)
 
 if not os.path.exists(unet_transfer_model_path):
-    st.write("Downloading U-Net Transfer Learning model file...")
+    st.write("Descargando modelo U-Net Transfer Learning...")
     download_file_from_drive(unet_transfer_model_id, unet_transfer_model_path)
 
 if not os.path.exists(unet_scratch_history_path):
-    st.write("Downloading U-Net Scratch history file...")
+    st.write("Descargando historial U-Net desde cero...")
     download_file_from_drive(unet_scratch_history_id, unet_scratch_history_path)
 
 if not os.path.exists(unet_transfer_history_path):
-    st.write("Downloading U-Net Transfer Learning history file...")
+    st.write("Descargando historial U-Net Transfer Learning...")
     download_file_from_drive(unet_transfer_history_id, unet_transfer_history_path)
 
-# Load the models and history files once they are downloaded
-st.write("Loading models and histories...")
+# Cargar los modelos y archivos de historial
+st.write("Cargando modelos y historiales...")
 unet_scratch_model = load_model(unet_scratch_model_path)
 unet_transfer_model = load_model(unet_transfer_model_path)
-
-# Load history files for metrics if required
 unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
 unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
 
-st.success("Models and histories loaded successfully!")
+st.success("¡Modelos e historiales cargados exitosamente!")
+
 
 
 
