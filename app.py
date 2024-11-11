@@ -1,13 +1,10 @@
 import streamlit as st
-from model_handler import ModelHandler
-from image_processor import ImageProcessor
-from history_handler import HistoryHandler
-import datetime
-import matplotlib.pyplot as plt
+from tensorflow.keras.models import load_model
 import gdown
 import os
-from tensorflow.keras.models import load_model
 import numpy as np
+import datetime
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
 
@@ -26,128 +23,90 @@ unet_transfer_history_path = "unet_transfer_history.npz"
 # Función para descargar un archivo de Google Drive usando gdown
 def download_file_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
-    st.write(f"Descargando {output_path} desde Google Drive...")
     gdown.download(url, output_path, quiet=False)
 
-# Verifica si los archivos ya existen y descárgalos si es necesario
-if not os.path.exists(unet_scratch_model_path):
-    download_file_from_drive(unet_scratch_model_id, unet_scratch_model_path)
-
-if not os.path.exists(unet_transfer_model_path):
-    download_file_from_drive(unet_transfer_model_id, unet_transfer_model_path)
-
-if not os.path.exists(unet_scratch_history_path):
-    download_file_from_drive(unet_scratch_history_id, unet_scratch_history_path)
-
-if not os.path.exists(unet_transfer_history_path):
-    download_file_from_drive(unet_transfer_history_id, unet_transfer_history_path)
-
-# Confirmar la existencia y tamaño de cada archivo descargado
-def check_file(file_path):
-    if os.path.exists(file_path):
-        st.write(f"El archivo {file_path} fue descargado exitosamente y tiene un tamaño de {os.path.getsize(file_path)} bytes.")
-    else:
-        st.error(f"Error: El archivo {file_path} no se encuentra después de la descarga.")
-
-check_file(unet_scratch_model_path)
-check_file(unet_transfer_model_path)
-check_file(unet_scratch_history_path)
-check_file(unet_transfer_history_path)
+# Verificar y descargar archivos si no existen
+for file_id, output_path, name in [
+    (unet_scratch_model_id, unet_scratch_model_path, "modelo U-Net desde cero"),
+    (unet_transfer_model_id, unet_transfer_model_path, "modelo U-Net Transfer Learning"),
+    (unet_scratch_history_id, unet_scratch_history_path, "historial U-Net desde cero"),
+    (unet_transfer_history_id, unet_transfer_history_path, "historial U-Net Transfer Learning")
+]:
+    if not os.path.exists(output_path):
+        st.write(f"Descargando {name}...")
+        download_file_from_drive(file_id, output_path)
 
 # Cargar los modelos y archivos de historial
 try:
-    st.write("Cargando modelos y historiales...")
     unet_scratch_model = load_model(unet_scratch_model_path)
     unet_transfer_model = load_model(unet_transfer_model_path)
-    unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
-    unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
+    unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True) if os.path.exists(unet_scratch_history_path) else None
+    unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True) if os.path.exists(unet_transfer_history_path) else None
     st.success("¡Modelos e historiales cargados exitosamente!")
 except Exception as e:
     st.error(f"Error al cargar los modelos o historiales: {e}")
 
-
-# Inicializar componentes de la app de Streamlit
+# Inicializar la app
 st.title("Medical Chest CT Segmentation")
 st.subheader("Doctor and Patient Information")
 
-# Recolectar información del doctor y paciente
+# Información del doctor y paciente
 doctor_id = st.text_input("Doctor ID")
 patient_name = st.text_input("Patient Name")
 appointment_date = st.date_input("Date", datetime.date.today())
 
 if doctor_id and patient_name:
-    st.success("Información ingresada correctamente. Procede a cargar la imagen.")
+    st.success("Information entered successfully. Proceed to image upload.")
 
-    # Carga de imagen y selección de modelo
-    st.subheader("Paso 1: Subir Imagen de TC de Tórax")
-    uploaded_file = st.file_uploader("Sube una imagen de TC de tórax", type=["png", "jpg", "jpeg"])
+    # Cargar imagen y seleccionar modelo
+    st.subheader("Step 1: Upload Chest CT Image")
+    uploaded_file = st.file_uploader("Upload a Chest CT Image", type=["png", "jpg", "jpeg"])
 
     if uploaded_file:
-        image_processor = ImageProcessor()  # Instancia de ImageProcessor
-        img_array = image_processor.preprocess_image(uploaded_file)
-        st.image(uploaded_file, caption="Imagen de TC de Tórax Cargada", use_container_width=True)
+        st.image(uploaded_file, caption="Uploaded Chest CT Image", use_container_width=True)
 
-        st.subheader("Paso 2: Selecciona el Modelo para Predicción")
-        model_choice = st.radio("Elige un modelo:", ["U-Net desde Cero", "U-Net Transfer Learning", "Ambos"])
+        st.subheader("Step 2: Select Model(s) for Prediction")
+        model_choice = st.radio("Choose a model:", ["U-Net desde Cero", "U-Net Transfer Learning", "Both"])
 
-        if st.button("Generar Predicción"):
+        if st.button("Generate Prediction"):
             predictions = {}
             metrics_data = {}
 
-            # Ejecuta los modelos seleccionados
-            if model_choice in ["U-Net desde Cero", "Ambos"]:
-                pred = unet_scratch_model.predict(img_array)
-                processed_mask = image_processor.postprocess_mask(pred)
-                st.image(processed_mask, caption="Predicción - U-Net desde Cero", use_container_width=True)
-                predictions["U-Net desde Cero"] = processed_mask
+            # Ejecutar el modelo seleccionado
+            if model_choice in ["U-Net desde Cero", "Both"] and unet_scratch_history is not None:
+                pred = unet_scratch_model.predict(img_array)  # img_array debería estar definido en tu código completo
+                st.image(pred, caption="Prediction - U-Net desde Cero", use_container_width=True)
+                predictions["U-Net desde Cero"] = pred
                 metrics_data["U-Net desde Cero"] = unet_scratch_history
 
-            if model_choice in ["U-Net Transfer Learning", "Ambos"]:
+            if model_choice in ["U-Net Transfer Learning", "Both"] and unet_transfer_history is not None:
                 pred = unet_transfer_model.predict(img_array)
-                processed_mask = image_processor.postprocess_mask(pred)
-                st.image(processed_mask, caption="Predicción - U-Net Transfer Learning", use_container_width=True)
-                predictions["U-Net Transfer Learning"] = processed_mask
+                st.image(pred, caption="Prediction - U-Net Transfer Learning", use_container_width=True)
+                predictions["U-Net Transfer Learning"] = pred
                 metrics_data["U-Net Transfer Learning"] = unet_transfer_history
 
             # Mostrar métricas
-            st.subheader("Métricas del Modelo")
+            st.subheader("Model Metrics")
             for model_name, metrics in metrics_data.items():
-                st.write(f"**Métricas de {model_name}**")
+                st.write(f"**{model_name} Metrics**")
                 st.write(f"IoU: {metrics['iou_metric'][-1]:.4f}")
                 st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
-                st.write(f"Validación Pérdida: {metrics['val_loss'][-1]:.4f}")
+                st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
 
-                # Gráfica de métricas
+                # Graficar métricas
                 fig, ax = plt.subplots()
-                ax.plot(metrics['loss'], label="Pérdida Entrenamiento")
-                ax.plot(metrics['val_loss'], label="Pérdida Validación")
-                ax.plot(metrics['dice_coef'], label="Coeficiente Dice")
-                ax.plot(metrics['iou_metric'], label="Métrica IoU")
+                ax.plot(metrics['loss'], label="Training Loss")
+                ax.plot(metrics['val_loss'], label="Validation Loss")
+                ax.plot(metrics['dice_coef'], label="Dice Coefficient")
+                ax.plot(metrics['iou_metric'], label="IoU Metric")
                 ax.legend()
                 st.pyplot(fig)
 
-            # Opción para exportar predicción y métricas
-            if st.button("Exportar Predicción y Métricas"):
-                # Preparar contenido del informe
-                report = f"""
-                Doctor ID: {doctor_id}
-                Nombre del Paciente: {patient_name}
-                Fecha de Cita: {appointment_date}
-
-                Predicciones y Métricas:
-                """
+            # Opción de exportar
+            if st.button("Export Prediction and Metrics"):
+                report = f"Doctor ID: {doctor_id}\nPatient Name: {patient_name}\nAppointment Date: {appointment_date}\n\nPredictions and Metrics:\n"
                 for model_name, metrics in metrics_data.items():
-                    report += f"\nModelo: {model_name}\n"
-                    report += f"IoU: {metrics['iou_metric'][-1]:.4f}\n"
-                    report += f"Coeficiente Dice: {metrics['dice_coef'][-1]:.4f}\n"
-                    report += f"Pérdida Validación: {metrics['val_loss'][-1]:.4f}\n"
-
-                # Botón de descarga para el informe en texto
-                st.download_button(
-                    label="Descargar Informe",
-                    data=report,
-                    file_name=f"{patient_name}_prediction_report.txt",
-                    mime="text/plain"
-                )
+                    report += f"\nModel: {model_name}\nIoU: {metrics['iou_metric'][-1]:.4f}\nDice Coefficient: {metrics['dice_coef'][-1]:.4f}\nValidation Loss: {metrics['val_loss'][-1]:.4f}\n"
+                st.download_button("Download Report", data=report, file_name=f"{patient_name}_prediction_report.txt", mime="text/plain")
 else:
-    st.warning("Por favor ingresa la información del doctor y paciente para continuar.")
+    st.warning("Please enter doctor and patient information to proceed.")
