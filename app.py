@@ -2,14 +2,12 @@ import streamlit as st
 from tensorflow.keras.models import load_model
 from model_handler import ModelHandler
 from image_processor import ImageProcessor
-from history_handler import HistoryHandler
 import gdown
 import os
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 from io import BytesIO
-
 
 st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
 
@@ -51,7 +49,7 @@ try:
 except Exception as e:
     st.error(f"Error al cargar los modelos o historiales: {e}")
 
-
+# Inicializar las clases de procesamiento de imágenes
 image_processor = ImageProcessor()
 
 # Inicializar la app
@@ -72,8 +70,14 @@ if doctor_id and patient_name:
 
     if uploaded_file:
         # Procesar la imagen para hacerla compatible con el modelo
-        img_array = image_processor.preprocess_image(uploaded_file)  # Define `img_array` aquí
+        img_array = image_processor.preprocess_image(uploaded_file)
         st.image(uploaded_file, caption="Uploaded Chest CT Image", use_container_width=True)
+
+        # Subir y mostrar la máscara de referencia junto con la imagen y las predicciones
+        uploaded_mask_file = st.file_uploader("Upload Ground Truth Mask", type=["png", "jpg", "jpeg"])
+        if uploaded_mask_file:
+            ground_truth_mask = image_processor.preprocess_image(uploaded_mask_file)
+            st.image(ground_truth_mask, caption="Ground Truth Mask", use_container_width=True)
 
         st.subheader("Step 2: Select Model(s) for Prediction")
         model_choice = st.radio("Choose a model:", ["U-Net desde Cero", "U-Net Transfer Learning", "Both"])
@@ -97,6 +101,18 @@ if doctor_id and patient_name:
                 predictions["U-Net Transfer Learning"] = processed_mask
                 metrics_data["U-Net Transfer Learning"] = unet_transfer_history
 
+            # Comparación visual entre predicciones y ground truth
+            if uploaded_mask_file:
+                for model_name, prediction in predictions.items():
+                    fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+                    axs[0].imshow(img_array[0])
+                    axs[0].set_title("Original Image")
+                    axs[1].imshow(ground_truth_mask, cmap="gray")
+                    axs[1].set_title("Ground Truth Mask")
+                    axs[2].imshow(prediction, cmap="gray")
+                    axs[2].set_title(f"Prediction - {model_name}")
+                    st.pyplot(fig)
+
             # Mostrar métricas
             st.subheader("Model Metrics")
             for model_name, metrics in metrics_data.items():
@@ -111,8 +127,22 @@ if doctor_id and patient_name:
                 ax.plot(metrics['val_loss'], label="Validation Loss")
                 ax.plot(metrics['dice_coef'], label="Dice Coefficient")
                 ax.plot(metrics['iou_metric'], label="IoU Metric")
+                ax.set_xlabel("Épocas")
+                ax.set_ylabel("Valor")
                 ax.legend()
                 st.pyplot(fig)
 
+            # Botón de descarga de la predicción
+            for model_name, prediction in predictions.items():
+                buffer = BytesIO()
+                plt.imsave(buffer, prediction, format="jpg", cmap="gray")
+                buffer.seek(0)
+                download_filename = f"{patient_name}_{appointment_date}_{model_name}.jpg"
+                st.download_button(
+                    label=f"Download {model_name} Prediction",
+                    data=buffer,
+                    file_name=download_filename,
+                    mime="image/jpg"
+                )
 else:
     st.warning("Please enter doctor and patient information to proceed.")
