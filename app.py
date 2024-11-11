@@ -26,33 +26,45 @@ unet_transfer_history_path = "unet_transfer_history.npz"
 # Función para descargar un archivo de Google Drive usando gdown
 def download_file_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
+    st.write(f"Descargando {output_path} desde Google Drive...")
     gdown.download(url, output_path, quiet=False)
 
 # Verifica si los archivos ya existen y descárgalos si es necesario
 if not os.path.exists(unet_scratch_model_path):
-    st.write("Descargando modelo U-Net desde cero...")
     download_file_from_drive(unet_scratch_model_id, unet_scratch_model_path)
 
 if not os.path.exists(unet_transfer_model_path):
-    st.write("Descargando modelo U-Net Transfer Learning...")
     download_file_from_drive(unet_transfer_model_id, unet_transfer_model_path)
 
 if not os.path.exists(unet_scratch_history_path):
-    st.write("Descargando historial U-Net desde cero...")
     download_file_from_drive(unet_scratch_history_id, unet_scratch_history_path)
 
 if not os.path.exists(unet_transfer_history_path):
-    st.write("Descargando historial U-Net Transfer Learning...")
     download_file_from_drive(unet_transfer_history_id, unet_transfer_history_path)
 
-# Cargar los modelos y archivos de historial
-st.write("Cargando modelos y historiales...")
-unet_scratch_model = load_model(unet_scratch_model_path)
-unet_transfer_model = load_model(unet_transfer_model_path)
-unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
-unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
+# Confirmar la existencia y tamaño de cada archivo descargado
+def check_file(file_path):
+    if os.path.exists(file_path):
+        st.write(f"El archivo {file_path} fue descargado exitosamente y tiene un tamaño de {os.path.getsize(file_path)} bytes.")
+    else:
+        st.error(f"Error: El archivo {file_path} no se encuentra después de la descarga.")
 
-st.success("¡Modelos e historiales cargados exitosamente!")
+check_file(unet_scratch_model_path)
+check_file(unet_transfer_model_path)
+check_file(unet_scratch_history_path)
+check_file(unet_transfer_history_path)
+
+# Cargar los modelos y archivos de historial
+try:
+    st.write("Cargando modelos y historiales...")
+    unet_scratch_model = load_model(unet_scratch_model_path)
+    unet_transfer_model = load_model(unet_transfer_model_path)
+    unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
+    unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
+    st.success("¡Modelos e historiales cargados exitosamente!")
+except Exception as e:
+    st.error(f"Error al cargar los modelos o historiales: {e}")
+
 
 # Inicializar componentes de la app de Streamlit
 st.title("Medical Chest CT Segmentation")
