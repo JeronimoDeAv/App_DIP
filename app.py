@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 
 # Paths
 model_paths = {
-    'U-Net desde Cero': "C:\\Users\\Lenovo\\Desktop\\Semestre 7\\DIP\\unet_scratch.keras",
-    'U-Net Transfer Learning': "C:\\Users\\Lenovo\\Desktop\\Semestre 7\\DIP\\unet_transfer.keras"
+    'U-Net desde Cero': "unet_scratch.keras",
+    'U-Net Transfer Learning': "unet_transfer.keras"
 }
 history_paths = {
-    'U-Net desde Cero': "C:\\Users\\Lenovo\\Desktop\\Semestre 7\\DIP\\unet_scratch_history.npz",
-    'U-Net Transfer Learning': "C:\\Users\\Lenovo\\Desktop\\Semestre 7\\DIP\\unet_transfer_history.npz"
+    'U-Net desde Cero': "unet_scratch_history.npz",
+    'U-Net Transfer Learning': "unet_transfer_history.npz"
 }
 
 # Initialize handlers
