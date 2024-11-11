@@ -1,15 +1,15 @@
 import streamlit as st
-import gdown
-import os
-import numpy as np
-import datetime
-import matplotlib.pyplot as plt
-from tensorflow.keras.models import load_model
 from model_handler import ModelHandler
 from image_processor import ImageProcessor
 from history_handler import HistoryHandler
+import datetime
+import matplotlib.pyplot as plt
+import gdown
+import os
+from tensorflow.keras.models import load_model
+import numpy as np
 
-# Correct Google Drive file IDs for each file
+# Google Drive file IDs for each file
 unet_scratch_model_id = "1F8zkCMlT2eBRjJ5gjhxzp-yq_7zFkr-h"
 unet_transfer_model_id = "1Wf5bzR6Sf2zRfNjFKCmUT6UbgK2MAuP4"
 unet_scratch_history_id = "1SiOtLlKK2GsZ9VsIW_LHlH-VEcFBrsWk"
@@ -26,7 +26,7 @@ def download_file_from_drive(file_id, output_path):
     url = f"https://drive.google.com/uc?id={file_id}"
     gdown.download(url, output_path, quiet=False)
 
-# Download files if they do not already exist
+# Check if the files are already downloaded; if not, download them
 if not os.path.exists(unet_scratch_model_path):
     st.write("Downloading U-Net Scratch model file...")
     download_file_from_drive(unet_scratch_model_id, unet_scratch_model_path)
@@ -42,6 +42,20 @@ if not os.path.exists(unet_scratch_history_path):
 if not os.path.exists(unet_transfer_history_path):
     st.write("Downloading U-Net Transfer Learning history file...")
     download_file_from_drive(unet_transfer_history_id, unet_transfer_history_path)
+
+# Load the models and history files once they are downloaded
+st.write("Loading models and histories...")
+unet_scratch_model = load_model(unet_scratch_model_path)
+unet_transfer_model = load_model(unet_transfer_model_path)
+
+# Load history files for metrics if required
+unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
+unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
+
+st.success("Models and histories loaded successfully!")
+
+
+
 
 # Load models and history files
 unet_scratch_model = load_model(unet_scratch_model_path)
