@@ -8,6 +8,8 @@ import os
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+from io import BytesIO
+
 
 st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
 
@@ -114,9 +116,20 @@ if doctor_id and patient_name:
 
             # Opción de exportar
             if st.button("Export Prediction and Metrics"):
+                # Preparar el contenido del informe
                 report = f"Doctor ID: {doctor_id}\nPatient Name: {patient_name}\nAppointment Date: {appointment_date}\n\nPredictions and Metrics:\n"
                 for model_name, metrics in metrics_data.items():
                     report += f"\nModel: {model_name}\nIoU: {metrics['iou_metric'][-1]:.4f}\nDice Coefficient: {metrics['dice_coef'][-1]:.4f}\nValidation Loss: {metrics['val_loss'][-1]:.4f}\n"
-                st.download_button("Download Report", data=report, file_name=f"{patient_name}_prediction_report.txt", mime="text/plain")
+            
+                # Convertir el informe en un flujo de bytes
+                report_bytes = BytesIO(report.encode('utf-8'))
+            
+                # Botón para descargar el informe
+                st.download_button(
+                    label="Download Report",
+                    data=report_bytes,
+                    file_name=f"{patient_name}_prediction_report.txt",
+                    mime="text/plain"
+                )
 else:
     st.warning("Please enter doctor and patient information to proceed.")
