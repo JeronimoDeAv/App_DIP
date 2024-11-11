@@ -49,6 +49,12 @@ try:
 except Exception as e:
     st.error(f"Error al cargar los modelos o historiales: {e}")
 
+
+# Initialize handlers
+model_handler = ModelHandler(model_paths)
+image_processor = ImageProcessor()
+history_handler = HistoryHandler(history_paths)
+
 # Inicializar la app
 st.title("Medical Chest CT Segmentation")
 st.subheader("Doctor and Patient Information")
