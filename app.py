@@ -115,7 +115,7 @@ if doctor_id and patient_name:
                 st.pyplot(fig)
 
             # Opción de exportar
-            if st.button("Export Prediction and Metrics"):
+            if st.button("Download Prediction and Metrics"):
                 # Preparar el contenido del informe
                 report = f"Doctor ID: {doctor_id}\nPatient Name: {patient_name}\nAppointment Date: {appointment_date}\n\nPredictions and Metrics:\n"
                 for model_name, metrics in metrics_data.items():
