@@ -54,98 +54,88 @@ unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
 
 st.success("¡Modelos e historiales cargados exitosamente!")
 
-
-
-
-
-# Load models and history files
-unet_scratch_model = load_model(unet_scratch_model_path)
-unet_transfer_model = load_model(unet_transfer_model_path)
-unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
-unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
-
-# Initialize Streamlit app components
+# Inicializar componentes de la app de Streamlit
 st.title("Medical Chest CT Segmentation")
 st.subheader("Doctor and Patient Information")
 
-# Collect doctor and patient info
+# Recolectar información del doctor y paciente
 doctor_id = st.text_input("Doctor ID")
 patient_name = st.text_input("Patient Name")
 appointment_date = st.date_input("Date", datetime.date.today())
 
 if doctor_id and patient_name:
-    st.success("Information entered successfully. Proceed to image upload.")
+    st.success("Información ingresada correctamente. Procede a cargar la imagen.")
 
-    # Image upload and model selection
-    st.subheader("Step 1: Upload Chest CT Image")
-    uploaded_file = st.file_uploader("Upload a Chest CT Image", type=["png", "jpg", "jpeg"])
+    # Carga de imagen y selección de modelo
+    st.subheader("Paso 1: Subir Imagen de TC de Tórax")
+    uploaded_file = st.file_uploader("Sube una imagen de TC de tórax", type=["png", "jpg", "jpeg"])
 
     if uploaded_file:
+        image_processor = ImageProcessor()  # Instancia de ImageProcessor
         img_array = image_processor.preprocess_image(uploaded_file)
-        st.image(uploaded_file, caption="Uploaded Chest CT Image", use_container_width=True)
+        st.image(uploaded_file, caption="Imagen de TC de Tórax Cargada", use_container_width=True)
 
-        st.subheader("Step 2: Select Model(s) for Prediction")
-        model_choice = st.radio("Choose a model:", ["U-Net desde Cero", "U-Net Transfer Learning", "Both"])
+        st.subheader("Paso 2: Selecciona el Modelo para Predicción")
+        model_choice = st.radio("Elige un modelo:", ["U-Net desde Cero", "U-Net Transfer Learning", "Ambos"])
 
-        if st.button("Generate Prediction"):
+        if st.button("Generar Predicción"):
             predictions = {}
             metrics_data = {}
 
-            # Run selected model(s)
-            if model_choice in ["U-Net desde Cero", "Both"]:
+            # Ejecuta los modelos seleccionados
+            if model_choice in ["U-Net desde Cero", "Ambos"]:
                 pred = unet_scratch_model.predict(img_array)
                 processed_mask = image_processor.postprocess_mask(pred)
-                st.image(processed_mask, caption="Prediction - U-Net desde Cero", use_container_width=True)
+                st.image(processed_mask, caption="Predicción - U-Net desde Cero", use_container_width=True)
                 predictions["U-Net desde Cero"] = processed_mask
                 metrics_data["U-Net desde Cero"] = unet_scratch_history
 
-            if model_choice in ["U-Net Transfer Learning", "Both"]:
+            if model_choice in ["U-Net Transfer Learning", "Ambos"]:
                 pred = unet_transfer_model.predict(img_array)
                 processed_mask = image_processor.postprocess_mask(pred)
-                st.image(processed_mask, caption="Prediction - U-Net Transfer Learning", use_container_width=True)
+                st.image(processed_mask, caption="Predicción - U-Net Transfer Learning", use_container_width=True)
                 predictions["U-Net Transfer Learning"] = processed_mask
                 metrics_data["U-Net Transfer Learning"] = unet_transfer_history
 
-            # Display metrics
-            st.subheader("Model Metrics")
+            # Mostrar métricas
+            st.subheader("Métricas del Modelo")
             for model_name, metrics in metrics_data.items():
-                st.write(f"**{model_name} Metrics**")
+                st.write(f"**Métricas de {model_name}**")
                 st.write(f"IoU: {metrics['iou_metric'][-1]:.4f}")
                 st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
-                st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
+                st.write(f"Validación Pérdida: {metrics['val_loss'][-1]:.4f}")
 
-                # Plot metrics
+                # Gráfica de métricas
                 fig, ax = plt.subplots()
-                ax.plot(metrics['loss'], label="Training Loss")
-                ax.plot(metrics['val_loss'], label="Validation Loss")
-                ax.plot(metrics['dice_coef'], label="Dice Coefficient")
-                ax.plot(metrics['iou_metric'], label="IoU Metric")
+                ax.plot(metrics['loss'], label="Pérdida Entrenamiento")
+                ax.plot(metrics['val_loss'], label="Pérdida Validación")
+                ax.plot(metrics['dice_coef'], label="Coeficiente Dice")
+                ax.plot(metrics['iou_metric'], label="Métrica IoU")
                 ax.legend()
                 st.pyplot(fig)
 
-            # Export option
-            if st.button("Export Prediction and Metrics"):
-                # Prepare report content
+            # Opción para exportar predicción y métricas
+            if st.button("Exportar Predicción y Métricas"):
+                # Preparar contenido del informe
                 report = f"""
                 Doctor ID: {doctor_id}
-                Patient Name: {patient_name}
-                Appointment Date: {appointment_date}
+                Nombre del Paciente: {patient_name}
+                Fecha de Cita: {appointment_date}
 
-                Predictions and Metrics:
+                Predicciones y Métricas:
                 """
                 for model_name, metrics in metrics_data.items():
-                    report += f"\nModel: {model_name}\n"
+                    report += f"\nModelo: {model_name}\n"
                     report += f"IoU: {metrics['iou_metric'][-1]:.4f}\n"
-                    report += f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}\n"
-                    report += f"Validation Loss: {metrics['val_loss'][-1]:.4f}\n"
+                    report += f"Coeficiente Dice: {metrics['dice_coef'][-1]:.4f}\n"
+                    report += f"Pérdida Validación: {metrics['val_loss'][-1]:.4f}\n"
 
-                # Display download button for the report as plain text
+                # Botón de descarga para el informe en texto
                 st.download_button(
-                    label="Download Report",
+                    label="Descargar Informe",
                     data=report,
                     file_name=f"{patient_name}_prediction_report.txt",
                     mime="text/plain"
                 )
 else:
-    st.warning("Please enter doctor and patient information to proceed.")
-
+    st.warning("Por favor ingresa la información del doctor y paciente para continuar.")
