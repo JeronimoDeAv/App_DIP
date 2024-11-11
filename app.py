@@ -63,6 +63,8 @@ if doctor_id and patient_name:
     uploaded_file = st.file_uploader("Upload a Chest CT Image", type=["png", "jpg", "jpeg"])
 
     if uploaded_file:
+        # Procesar la imagen para hacerla compatible con el modelo
+        img_array = image_processor.preprocess_image(uploaded_file)  # Define `img_array` aquí
         st.image(uploaded_file, caption="Uploaded Chest CT Image", use_container_width=True)
 
         st.subheader("Step 2: Select Model(s) for Prediction")
@@ -74,15 +76,17 @@ if doctor_id and patient_name:
 
             # Ejecutar el modelo seleccionado
             if model_choice in ["U-Net desde Cero", "Both"] and unet_scratch_history is not None:
-                pred = unet_scratch_model.predict(img_array)  # img_array debería estar definido en tu código completo
-                st.image(pred, caption="Prediction - U-Net desde Cero", use_container_width=True)
-                predictions["U-Net desde Cero"] = pred
+                pred = unet_scratch_model.predict(img_array)
+                processed_mask = image_processor.postprocess_mask(pred)
+                st.image(processed_mask, caption="Prediction - U-Net desde Cero", use_container_width=True)
+                predictions["U-Net desde Cero"] = processed_mask
                 metrics_data["U-Net desde Cero"] = unet_scratch_history
 
             if model_choice in ["U-Net Transfer Learning", "Both"] and unet_transfer_history is not None:
                 pred = unet_transfer_model.predict(img_array)
-                st.image(pred, caption="Prediction - U-Net Transfer Learning", use_container_width=True)
-                predictions["U-Net Transfer Learning"] = pred
+                processed_mask = image_processor.postprocess_mask(pred)
+                st.image(processed_mask, caption="Prediction - U-Net Transfer Learning", use_container_width=True)
+                predictions["U-Net Transfer Learning"] = processed_mask
                 metrics_data["U-Net Transfer Learning"] = unet_transfer_history
 
             # Mostrar métricas
