@@ -1,28 +1,56 @@
 import streamlit as st
+import gdown
+import os
+import numpy as np
+import datetime
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import load_model
 from model_handler import ModelHandler
 from image_processor import ImageProcessor
 from history_handler import HistoryHandler
-import datetime
-import matplotlib.pyplot as plt
 
-# Paths
-model_paths = {
-    'U-Net desde Cero': "unet_scratch.keras",
-    'U-Net Transfer Learning': "unet_transfer.keras"
-}
-history_paths = {
-    'U-Net desde Cero': "unet_scratch_history.npz",
-    'U-Net Transfer Learning': "unet_transfer_history.npz"
-}
+# Correct Google Drive file IDs for each file
+unet_scratch_model_id = "1F8zkCMlT2eBRjJ5gjhxzp-yq_7zFkr-h"
+unet_transfer_model_id = "1Wf5bzR6Sf2zRfNjFKCmUT6UbgK2MAuP4"
+unet_scratch_history_id = "1SiOtLlKK2GsZ9VsIW_LHlH-VEcFBrsWk"
+unet_transfer_history_id = "16mklVOSDXywiPx7z1RqVACjJMzn29kni"
 
-# Initialize handlers
-model_handler = ModelHandler(model_paths)
-image_processor = ImageProcessor()
-history_handler = HistoryHandler(history_paths)
+# Paths to save the downloaded files
+unet_scratch_model_path = "unet_scratch.keras"
+unet_transfer_model_path = "unet_transfer.keras"
+unet_scratch_history_path = "unet_scratch_history.npz"
+unet_transfer_history_path = "unet_transfer_history.npz"
 
-# Set up the interface with a medical theme
+# Function to download a file from Google Drive using gdown
+def download_file_from_drive(file_id, output_path):
+    url = f"https://drive.google.com/uc?id={file_id}"
+    gdown.download(url, output_path, quiet=False)
+
+# Download files if they do not already exist
+if not os.path.exists(unet_scratch_model_path):
+    st.write("Downloading U-Net Scratch model file...")
+    download_file_from_drive(unet_scratch_model_id, unet_scratch_model_path)
+
+if not os.path.exists(unet_transfer_model_path):
+    st.write("Downloading U-Net Transfer Learning model file...")
+    download_file_from_drive(unet_transfer_model_id, unet_transfer_model_path)
+
+if not os.path.exists(unet_scratch_history_path):
+    st.write("Downloading U-Net Scratch history file...")
+    download_file_from_drive(unet_scratch_history_id, unet_scratch_history_path)
+
+if not os.path.exists(unet_transfer_history_path):
+    st.write("Downloading U-Net Transfer Learning history file...")
+    download_file_from_drive(unet_transfer_history_id, unet_transfer_history_path)
+
+# Load models and history files
+unet_scratch_model = load_model(unet_scratch_model_path)
+unet_transfer_model = load_model(unet_transfer_model_path)
+unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True)
+unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True)
+
+# Initialize Streamlit app components
 st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
-
 st.title("Medical Chest CT Segmentation")
 st.subheader("Doctor and Patient Information")
 
@@ -51,20 +79,18 @@ if doctor_id and patient_name:
 
             # Run selected model(s)
             if model_choice in ["U-Net desde Cero", "Both"]:
-                model = model_handler.get_model("U-Net desde Cero")
-                pred = model.predict(img_array)
+                pred = unet_scratch_model.predict(img_array)
                 processed_mask = image_processor.postprocess_mask(pred)
                 st.image(processed_mask, caption="Prediction - U-Net desde Cero", use_container_width=True)
                 predictions["U-Net desde Cero"] = processed_mask
-                metrics_data["U-Net desde Cero"] = history_handler.get_metrics("U-Net desde Cero")
+                metrics_data["U-Net desde Cero"] = unet_scratch_history
 
             if model_choice in ["U-Net Transfer Learning", "Both"]:
-                model = model_handler.get_model("U-Net Transfer Learning")
-                pred = model.predict(img_array)
+                pred = unet_transfer_model.predict(img_array)
                 processed_mask = image_processor.postprocess_mask(pred)
                 st.image(processed_mask, caption="Prediction - U-Net Transfer Learning", use_container_width=True)
                 predictions["U-Net Transfer Learning"] = processed_mask
-                metrics_data["U-Net Transfer Learning"] = history_handler.get_metrics("U-Net Transfer Learning")
+                metrics_data["U-Net Transfer Learning"] = unet_transfer_history
 
             # Display metrics
             st.subheader("Model Metrics")
@@ -99,9 +125,6 @@ if doctor_id and patient_name:
                     report += f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}\n"
                     report += f"Validation Loss: {metrics['val_loss'][-1]:.4f}\n"
 
-                # Print to verify report content
-                print(report)
-
                 # Display download button for the report as plain text
                 st.download_button(
                     label="Download Report",
@@ -111,3 +134,4 @@ if doctor_id and patient_name:
                 )
 else:
     st.warning("Please enter doctor and patient information to proceed.")
+
