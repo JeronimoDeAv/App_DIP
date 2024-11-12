@@ -12,9 +12,9 @@ from io import BytesIO
 st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
 
 # Google Drive file IDs para cada archivo
-unet_scratch_model_id = "1-38XdWMeux6siCzE7NVLqsCX_ZnBAJyF"
+unet_scratch_model_id = "1-0GwWcP7WbexdbM81R3nMN39vJ6nMfFJ"
 unet_transfer_model_id = "1Wf5bzR6Sf2zRfNjFKCmUT6UbgK2MAuP4"
-unet_scratch_history_id = "1-56GzsXZ3bpfXGrVOUFQGjOILw_Mc40p"
+unet_scratch_history_id = "1-7G2v1Ed6onwVazk8Mlbjd1sKWBINi1a"
 unet_transfer_history_id = "16mklVOSDXywiPx7z1RqVACjJMzn29kni"
 
 # Rutas locales para guardar los archivos
