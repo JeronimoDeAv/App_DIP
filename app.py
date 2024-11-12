@@ -49,20 +49,19 @@ try:
     # Crear metrics_data
     metrics_data = {
         'U-Net desde Cero': {
-            'loss': unet_scratch_history['loss'],
-            'val_loss': unet_scratch_history['val_loss'],
-            'dice_coef': unet_scratch_history['dice_coef'],
-            'iou_metric': unet_scratch_history['iou_metric']
+            'loss': np.array(unet_scratch_history['loss']),
+            'val_loss': np.array(unet_scratch_history['val_loss']),
+            'dice_coef': np.array(unet_scratch_history['dice_coef']),
+            'iou_metric': np.array(unet_scratch_history['iou_metric'])
         } if unet_scratch_history is not None else None,
         
         'U-Net Transfer Learning': {
-            'loss': unet_transfer_history['loss'],
-            'val_loss': unet_transfer_history['val_loss'],
-            'dice_coef': unet_transfer_history['dice_coef'],
-            'iou_metric': unet_transfer_history['iou_metric']
+            'loss': np.array(unet_transfer_history['loss']),
+            'val_loss': np.array(unet_transfer_history['val_loss']),
+            'dice_coef': np.array(unet_transfer_history['dice_coef']),
+            'iou_metric': np.array(unet_transfer_history['iou_metric'])
         } if unet_transfer_history is not None else None
     }
-    st.write("Contenido de métricas para U-Net Transfer Learning:", metrics_data.get("U-Net Transfer Learning", {}))
 
 
     st.success("¡Modelos e historiales cargados exitosamente!")
