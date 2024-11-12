@@ -47,11 +47,23 @@ try:
     unet_transfer_model = load_model(unet_transfer_model_path)
     unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True) if os.path.exists(unet_scratch_history_path) else None
     unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True) if os.path.exists(unet_transfer_history_path) else None
-    st.write("Contenido de métricas cargadas para Transfer Learning:", metrics_data['U-Net Transfer Learning'])
+
+    # Verificar contenido de métricas cargadas
+    if unet_transfer_history is not None:
+        st.write("Contenido de métricas cargadas para Transfer Learning:", unet_transfer_history.files)
+    else:
+        st.write("No se pudo cargar el historial de Transfer Learning")
+
+    # Crear metrics_data
+    metrics_data = {
+        'U-Net desde Cero': unet_scratch_history,
+        'U-Net Transfer Learning': unet_transfer_history
+    }
+
     st.success("¡Modelos e historiales cargados exitosamente!")
+
 except Exception as e:
     st.error(f"Error al cargar los modelos o historiales: {e}")
-
 
 # Inicializar las clases de procesamiento de imágenes
 image_processor = ImageProcessor()
