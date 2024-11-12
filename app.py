@@ -50,8 +50,19 @@ try:
 
     # Crear metrics_data
     metrics_data = {
-        'U-Net desde Cero': unet_scratch_history,
-        'U-Net Transfer Learning': unet_transfer_history
+        'U-Net desde Cero': {
+            'loss': unet_scratch_history['loss'],
+            'val_loss': unet_scratch_history['val_loss'],
+            'dice_coef': unet_scratch_history['dice_coef'],
+            'iou_metric': unet_scratch_history['iou_metric']
+        } if unet_scratch_history is not None else None,
+        
+        'U-Net Transfer Learning': {
+            'loss': unet_transfer_history['loss'],
+            'val_loss': unet_transfer_history['val_loss'],
+            'dice_coef': unet_transfer_history['dice_coef'],
+            'iou_metric': unet_transfer_history['iou_metric']
+        } if unet_transfer_history is not None else None
     }
 
     st.success("¡Modelos e historiales cargados exitosamente!")
@@ -131,45 +142,39 @@ if doctor_id and patient_name:
                     axs[2].set_title(f"Prediction - {model_name}")
                     st.pyplot(fig)
 
-
             # Mostrar métricas en Streamlit
             st.subheader("Model Metrics")
             for model_name, metrics in metrics_data.items():
-                st.write(f"**{model_name} Metrics**")
-                
-                # Mostrar las últimas métricas de cada modelo
-                if 'iou_metric' in metrics:
-                    st.write(f"IoU: {metrics['iou_metric'][-1]:.4f}")
-                if 'val_iou_metric' in metrics:
-                    st.write(f"Validation IoU: {metrics['val_iou_metric'][-1]:.4f}")
-                if 'dice_coef' in metrics:
-                    st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
-                if 'val_dice_coef' in metrics:
-                    st.write(f"Validation Dice Coefficient: {metrics['val_dice_coef'][-1]:.4f}")
-                if 'val_loss' in metrics:
-                    st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
-                if 'loss' in metrics:
-                    st.write(f"Training Loss: {metrics['loss'][-1]:.4f}")
+                if metrics is not None:  # Verifica que existan métricas para el modelo
+                    st.write(f"**{model_name} Metrics**")
+                    
+                    # Mostrar los valores finales de cada métrica
+                    if 'loss' in metrics:
+                        st.write(f"Training Loss: {metrics['loss'][-1]:.4f}")
+                    if 'val_loss' in metrics:
+                        st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
+                    if 'dice_coef' in metrics:
+                        st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
+                    if 'iou_metric' in metrics:
+                        st.write(f"IoU Metric: {metrics['iou_metric'][-1]:.4f}")
             
-                # Graficar las métricas disponibles
-                fig, ax = plt.subplots()
-                if 'loss' in metrics:
-                    ax.plot(metrics['loss'], label="Training Loss")
-                if 'val_loss' in metrics:
-                    ax.plot(metrics['val_loss'], label="Validation Loss")
-                if 'dice_coef' in metrics:
-                    ax.plot(metrics['dice_coef'], label="Dice Coefficient")
-                if 'val_dice_coef' in metrics:
-                    ax.plot(metrics['val_dice_coef'], label="Validation Dice Coefficient")
-                if 'iou_metric' in metrics:
-                    ax.plot(metrics['iou_metric'], label="IoU Metric")
-                if 'val_iou_metric' in metrics:
-                    ax.plot(metrics['val_iou_metric'], label="Validation IoU Metric")
-                
-                ax.set_xlabel("Epochs")
-                ax.set_ylabel("Metric Value")
-                ax.legend()
-                st.pyplot(fig)
+                    # Graficar las métricas disponibles
+                    fig, ax = plt.subplots()
+                    if 'loss' in metrics:
+                        ax.plot(metrics['loss'], label="Training Loss")
+                    if 'val_loss' in metrics:
+                        ax.plot(metrics['val_loss'], label="Validation Loss")
+                    if 'dice_coef' in metrics:
+                        ax.plot(metrics['dice_coef'], label="Dice Coefficient")
+                    if 'iou_metric' in metrics:
+                        ax.plot(metrics['iou_metric'], label="IoU Metric")
+                    
+                    ax.set_xlabel("Epochs")
+                    ax.set_ylabel("Metric Value")
+                    ax.legend()
+                    st.pyplot(fig)
+                else:
+                    st.write(f"No metrics available for {model_name}")
 
             
             # Botón de descarga de la predicción
