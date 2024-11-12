@@ -9,8 +9,6 @@ import datetime
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-st.cache_data.clear()
-
 st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
 
 # Google Drive file IDs para cada archivo
