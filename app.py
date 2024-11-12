@@ -126,21 +126,32 @@ if doctor_id and patient_name:
             st.subheader("Model Metrics")
             for model_name, metrics in metrics_data.items():
                 st.write(f"**{model_name} Metrics**")
-                st.write(f"IoU: {metrics['iou_metric'][-1]:.4f}")
-                st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
-                st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
-
-                # Graficar métricas
+                
+                # Verificar y mostrar cada métrica si está disponible en el archivo .npz
+                if 'iou_metric' in metrics:
+                    st.write(f"IoU: {metrics['iou_metric'][-1]:.4f}")
+                if 'dice_coef' in metrics:
+                    st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
+                if 'val_loss' in metrics:
+                    st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
+            
+                # Graficar las métricas disponibles
                 fig, ax = plt.subplots()
-                ax.plot(metrics['loss'], label="Training Loss")
-                ax.plot(metrics['val_loss'], label="Validation Loss")
-                ax.plot(metrics['dice_coef'], label="Dice Coefficient")
-                ax.plot(metrics['iou_metric'], label="IoU Metric")
+                if 'loss' in metrics:
+                    ax.plot(metrics['loss'], label="Training Loss")
+                if 'val_loss' in metrics:
+                    ax.plot(metrics['val_loss'], label="Validation Loss")
+                if 'dice_coef' in metrics:
+                    ax.plot(metrics['dice_coef'], label="Dice Coefficient")
+                if 'iou_metric' in metrics:
+                    ax.plot(metrics['iou_metric'], label="IoU Metric")
+                
                 ax.set_xlabel("Épocas")
                 ax.set_ylabel("Valor")
                 ax.legend()
                 st.pyplot(fig)
-
+            
+                        
             # Botón de descarga de la predicción
             for model_name, prediction in predictions.items():
                 # Convert the single-channel grayscale prediction to 3-channel RGB format for compatibility
