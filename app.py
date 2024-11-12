@@ -46,34 +46,22 @@ try:
     unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True) if os.path.exists(unet_scratch_history_path) else None
     unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True) if os.path.exists(unet_transfer_history_path) else None
 
-    # Crear metrics_data
-    # Crear metrics_data y convertir manualmente cada métrica a array numérico
-    def convert_to_array(data):
-        # Verifica si los datos son una cadena de texto
-        if isinstance(data, str):
-            # Elimina las partes "array([" y "])" del string, si existen, y convierte en array de floats
-            clean_data = data.replace("array([", "").replace("])", "")
-            return np.fromstring(clean_data, sep=",")
-        return np.array(data)
-    
     # Crear metrics_data y aplicar la función convert_to_array a cada métrica
     metrics_data = {
         'U-Net desde Cero': {
-            'loss': convert_to_array(unet_scratch_history['loss']),
-            'val_loss': convert_to_array(unet_scratch_history['val_loss']),
-            'dice_coef': convert_to_array(unet_scratch_history['dice_coef']),
-            'iou_metric': convert_to_array(unet_scratch_history['iou_metric'])
+            'loss': np.array(unet_scratch_history['loss']),
+            'val_loss': np.array(unet_scratch_history['val_loss']),
+            'dice_coef': np.array(unet_scratch_history['dice_coef']),
+            'iou_metric': np.array(unet_scratch_history['iou_metric'])
         } if unet_scratch_history is not None else None,
         
         'U-Net Transfer Learning': {
-            'loss': convert_to_array(unet_transfer_history['loss']),
-            'val_loss': convert_to_array(unet_transfer_history['val_loss']),
-            'dice_coef': convert_to_array(unet_transfer_history['dice_coef']),
-            'iou_metric': convert_to_array(unet_transfer_history['iou_metric'])
+            'loss': np.array(unet_transfer_history['loss']),
+            'val_loss': np.array(unet_transfer_history['val_loss']),
+            'dice_coef': np.array(unet_transfer_history['dice_coef']),
+            'iou_metric': np.array(unet_transfer_history['iou_metric'])
         } if unet_transfer_history is not None else None
     }
-
-    st.write("Contenido de métricas en metrics_data para U-Net Transfer Learning:", metrics_data.get("U-Net Transfer Learning", {}))
 
     st.success("¡Modelos e historiales cargados exitosamente!")
 
