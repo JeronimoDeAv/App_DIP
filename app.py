@@ -45,6 +45,7 @@ try:
     unet_transfer_model = load_model(unet_transfer_model_path)
     unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True) if os.path.exists(unet_scratch_history_path) else None
     unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True) if os.path.exists(unet_transfer_history_path) else None
+    st.write("Contenido de métricas para U-Net Transfer Learning:", metrics_data.get("U-Net Transfer Learning", {}))
 
     # Crear metrics_data
     metrics_data = {
