@@ -63,6 +63,7 @@ try:
         } if unet_transfer_history is not None else None
     }
 
+    st.write("Contenido de métricas en metrics_data para U-Net Transfer Learning:", metrics_data.get("U-Net Transfer Learning", {}))
 
     st.success("¡Modelos e historiales cargados exitosamente!")
 
