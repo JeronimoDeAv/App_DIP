@@ -132,15 +132,20 @@ if doctor_id and patient_name:
                     st.pyplot(fig)
 
 
-
+            # Mostrar métricas en Streamlit
             st.subheader("Model Metrics")
             for model_name, metrics in metrics_data.items():
                 st.write(f"**{model_name} Metrics**")
                 
+                # Mostrar las últimas métricas de cada modelo
                 if 'iou_metric' in metrics:
                     st.write(f"IoU: {metrics['iou_metric'][-1]:.4f}")
+                if 'val_iou_metric' in metrics:
+                    st.write(f"Validation IoU: {metrics['val_iou_metric'][-1]:.4f}")
                 if 'dice_coef' in metrics:
                     st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
+                if 'val_dice_coef' in metrics:
+                    st.write(f"Validation Dice Coefficient: {metrics['val_dice_coef'][-1]:.4f}")
                 if 'val_loss' in metrics:
                     st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
                 if 'loss' in metrics:
@@ -154,13 +159,18 @@ if doctor_id and patient_name:
                     ax.plot(metrics['val_loss'], label="Validation Loss")
                 if 'dice_coef' in metrics:
                     ax.plot(metrics['dice_coef'], label="Dice Coefficient")
+                if 'val_dice_coef' in metrics:
+                    ax.plot(metrics['val_dice_coef'], label="Validation Dice Coefficient")
                 if 'iou_metric' in metrics:
                     ax.plot(metrics['iou_metric'], label="IoU Metric")
+                if 'val_iou_metric' in metrics:
+                    ax.plot(metrics['val_iou_metric'], label="Validation IoU Metric")
                 
                 ax.set_xlabel("Epochs")
                 ax.set_ylabel("Metric Value")
                 ax.legend()
                 st.pyplot(fig)
+
             
             # Botón de descarga de la predicción
             for model_name, prediction in predictions.items():
