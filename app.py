@@ -42,24 +42,13 @@ for file_id, output_path, name in [
 # Cargar los modelos y archivos de historial
 try:
     unet_scratch_model = load_model(unet_scratch_model_path)
+    st.write(f"Expected input shape of the model: {unet_scratch_model.input_shape}")
     unet_transfer_model = load_model(unet_transfer_model_path)
     unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True) if os.path.exists(unet_scratch_history_path) else None
     unet_transfer_history = np.load(unet_transfer_history_path, allow_pickle=True) if os.path.exists(unet_transfer_history_path) else None
     st.success("¡Modelos e historiales cargados exitosamente!")
 except Exception as e:
     st.error(f"Error al cargar los modelos o historiales: {e}")
-
-# Cargar el modelo y el historial en Streamlit
-try:
-    unet_scratch_model = load_model(unet_scratch_model_path)
-    unet_scratch_history = np.load(unet_scratch_history_path, allow_pickle=True) if os.path.exists(unet_scratch_history_path) else None
-    st.success("¡Modelo e historial cargados exitosamente!")
-    
-    # Verificar la forma de entrada esperada del modelo
-    st.write(f"Expected input shape of the model: {unet_scratch_model.input_shape}")
-
-except Exception as e:
-    st.error(f"Error al cargar el modelo o historial: {e}")
 
 
 # Inicializar las clases de procesamiento de imágenes
