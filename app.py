@@ -86,13 +86,19 @@ if doctor_id and patient_name:
             predictions = {}
             metrics_data = {}
 
-            # Ejecutar el modelo seleccionado
+
             if model_choice in ["U-Net desde Cero", "Both"] and unet_scratch_history is not None:
+                # Procesar la imagen de entrada para que tenga la forma correcta
+                img_array = image_processor.preprocess_image(uploaded_file)  # Procesa la imagen
+                img_array = np.expand_dims(img_array, axis=0)  # Añadir dimensión de lote
+            
+                # Realizar la predicción
                 pred = unet_scratch_model.predict(img_array)
                 processed_mask = image_processor.postprocess_mask(pred)
                 st.image(processed_mask, caption="Prediction - U-Net desde Cero", use_container_width=True)
                 predictions["U-Net desde Cero"] = processed_mask
                 metrics_data["U-Net desde Cero"] = unet_scratch_history
+
 
             if model_choice in ["U-Net Transfer Learning", "Both"] and unet_transfer_history is not None:
                 pred = unet_transfer_model.predict(img_array)
