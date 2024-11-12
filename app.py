@@ -13,9 +13,9 @@ st.set_page_config(page_title="Medical Chest CT Segmentation", page_icon="🩺")
 
 # Google Drive file IDs para cada archivo
 unet_scratch_model_id = "1-afyzXqoQHWDPOy2icnNL__B42dIxDzA"
-unet_transfer_model_id = "1-717CvxJSww5C-TWKgSW6LHNpjLLh4It"
+unet_transfer_model_id = "1-0VQOp3hN5fJQ4WzyhGFFDznbHgov2Li"
 unet_scratch_history_id = "1-dWJD1m0C_xXFkXCivrg_pZjNJ7N19yn"
-unet_transfer_history_id = "1-0VQOp3hN5fJQ4WzyhGFFDznbHgov2Li"
+unet_transfer_history_id = "1-717CvxJSww5C-TWKgSW6LHNpjLLh4It"
 
 # Rutas locales para guardar los archivos
 unet_scratch_model_path = "unet_scratch.keras"
