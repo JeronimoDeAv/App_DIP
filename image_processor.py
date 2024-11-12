@@ -9,15 +9,20 @@ class ImageProcessor:
         # Abrir la imagen en el modo correspondiente
         if color_mode == "grayscale":
             image = Image.open(image_file).convert("L")  # Modo "L" para escala de grises
-            img_array = np.array(image) / 255.0
-            img_array = np.expand_dims(img_array, axis=-1)  # Añadir dimensión de canal
         elif color_mode == "rgb":
-            image = Image.open(image_file).convert("RGB")  # Modo "RGB"
-            img_array = np.array(image) / 255.0  # Normalizar a [0, 1]
+            image = Image.open(image_file).convert("RGB")  # Modo "RGB" para imágenes a color
 
-        # Cambiar tamaño y expandir dimensiones
+        # Redimensionar la imagen al tamaño de entrada esperado
         image = ImageOps.fit(image, self.target_size, method=Image.Resampling.BILINEAR)
+
+        # Convertir a un arreglo numpy y normalizar
+        img_array = np.array(image) / 255.0
+
+        # Añadir dimensión de lote y de canal según el caso
         img_array = np.expand_dims(img_array, axis=0)  # Añadir dimensión de lote
+        if color_mode == "grayscale":
+            img_array = np.expand_dims(img_array, axis=-1)  # Añadir dimensión de canal
+
         return img_array
 
     def postprocess_mask(self, mask_array):
