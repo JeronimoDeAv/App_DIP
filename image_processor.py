@@ -6,15 +6,17 @@ class ImageProcessor:
         self.target_size = target_size
 
     def preprocess_image(self, image_file):
-        # Open the image with PIL and convert to RGB
-        image = Image.open(image_file).convert("RGB")
-        # Resize the image to the target size
+        # Abrir la imagen y convertir a escala de grises (1 canal)
+        image = Image.open(image_file).convert("L")  # "L" es el modo para escala de grises
+        # Cambiar tamaño a la dimensión esperada
         image = ImageOps.fit(image, self.target_size, method=Image.Resampling.BILINEAR, bleed=0.0, centering=(0.5, 0.5))
-        # Convert the image to a numpy array and normalize to [0, 1]
+        # Convertir a array numpy y normalizar
         img_array = np.array(image) / 255.0
-        # Expand dimensions to add batch dimension
-        img_array = np.expand_dims(img_array, axis=0)  # Shape (1, height, width, 3)
+        # Expandir para añadir dimensión de lote y de canal
+        img_array = np.expand_dims(img_array, axis=0)  # (1, height, width)
+        img_array = np.expand_dims(img_array, axis=-1)  # (1, height, width, 1)
         return img_array
+
 
     def postprocess_mask(self, mask_array):
         # Remove the batch dimension
