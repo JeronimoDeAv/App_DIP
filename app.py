@@ -122,18 +122,20 @@ if doctor_id and patient_name:
                     axs[2].set_title(f"Prediction - {model_name}")
                     st.pyplot(fig)
 
-            # Mostrar métricas
+
+
             st.subheader("Model Metrics")
             for model_name, metrics in metrics_data.items():
                 st.write(f"**{model_name} Metrics**")
                 
-                # Verificar y mostrar cada métrica si está disponible en el archivo .npz
                 if 'iou_metric' in metrics:
                     st.write(f"IoU: {metrics['iou_metric'][-1]:.4f}")
                 if 'dice_coef' in metrics:
                     st.write(f"Dice Coefficient: {metrics['dice_coef'][-1]:.4f}")
                 if 'val_loss' in metrics:
                     st.write(f"Validation Loss: {metrics['val_loss'][-1]:.4f}")
+                if 'loss' in metrics:
+                    st.write(f"Training Loss: {metrics['loss'][-1]:.4f}")
             
                 # Graficar las métricas disponibles
                 fig, ax = plt.subplots()
@@ -146,12 +148,11 @@ if doctor_id and patient_name:
                 if 'iou_metric' in metrics:
                     ax.plot(metrics['iou_metric'], label="IoU Metric")
                 
-                ax.set_xlabel("Épocas")
-                ax.set_ylabel("Valor")
+                ax.set_xlabel("Epochs")
+                ax.set_ylabel("Metric Value")
                 ax.legend()
                 st.pyplot(fig)
             
-                        
             # Botón de descarga de la predicción
             for model_name, prediction in predictions.items():
                 # Convert the single-channel grayscale prediction to 3-channel RGB format for compatibility
